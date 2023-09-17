@@ -116,6 +116,7 @@ function presion(nombre){
 function pedirTurno(nombre){
     let nuevo
     let prepaga
+    let prepagaNombre
     let especialidad
     let disponibilidad
     let noespec = 2
@@ -131,21 +132,28 @@ function pedirTurno(nombre){
         disponibilidad = menu(nombre, "Consulta turnos: Disponibilidad horaria \n Atendemos días de semana de 8 a 20 hs", "1. Mañana\n 2. Tarde \n 3. Mañana y tarde",3)
         nuevo = menu(nombre,"Consulta turnos", "1. Soy un paciente nuevo en el consultorio\n 2.Ya me atendí en el consultorio",2)
         if(nuevo == 1){
-            //si es nuevo hay que pedirle mas datos
-            let apellido = prompt("Ingresá tu apellido")
-            let celular = prompt("Ingresá tu celular sin espacios")
-            prepaga = menu(nombre,"Consulta turnos: prepaga/Obra Social", "1. Swiss Medical\n2. OSDE\n3.Otra\n4. No tengo",4)
-            if (prepaga <= 2){
-                alert("La atención está cubierta por tu prepaga")
-            }else if (prepaga == 4){
-                alert("La atención no está cubierta por tu prepaga")
-            }else{
-                alert("Te agendaremos como privado.")
-            }
-            let dni = prompt("Ingresá tu DNI sin puntos ni comas")
-            const paciente = new PacienteNuevo(nombre,apellido,dni,celular,prepaga)
+            let datosOK = 2
+            do{
+                //si es nuevo hay que pedirle mas datos
+                let apellido = prompt("Ingresá tu apellido")
+                let celular = prompt("Ingresá tu celular sin espacios")
+                prepaga = menu(nombre,"Consulta turnos: prepaga/Obra Social", "1. Swiss Medical\n2. OSDE\n3. Galeno\n4. Medicus\n5. No tengo/Otra",5)
+                //const prepagasAceptadas = ["Swiss Medical","OSDE","Galeno","Medicus"]
+                if (prepaga <= 4){
+                    alert("La atención está cubierta por tu prepaga")
+                    prepagaNombre = prepagasAceptadas[prepaga-1]
+                }else{
+                    alert("La atención no está cubierta por tu prepaga. Te agendaremos como privado.")
+                    prepagaNombre = "Privado"
+                }
+                let dni = prompt("Ingresá tu DNI sin puntos ni comas")
+                const paciente = new PacienteNuevo(nombre,apellido,dni,celular,prepagaNombre)
+                
+                paciente.mostrarInfoPaciente()
+
+                datosOK = menu(nombre,"Confirmación datos ingresados", "1. Mis datos estaban ok\n2. Quiero corregir mis datos",2)
+            }while(datosOK!=1)
             
-            paciente.mostrarInfoPaciente()
         }
         //si no es nuevo, ya con el dni del paciente deberian rastrear el resto de los datos de contacto
         //let dni = prompt("Ingresá tu DNI sin puntos ni comas")
@@ -187,10 +195,7 @@ function salir(nombre){
     alert(`¡Gracias por visitarnos ${nombre}!`)
 }
 
-
-
 //Constructores y clases
-
 class PacienteNuevo{
     constructor(nombre,apellido,dni,celular,prepaga) {
         this.nombre = nombre;
@@ -201,19 +206,10 @@ class PacienteNuevo{
     }
 
     mostrarInfoPaciente(){
-        alert(`Estos son los datos registrados: \nNombre: ${this.nombre} \nApellido: ${this.apellido} \nDNI: ${this.dni} \nCelular: ${this.celular}`)
+        alert(`Estos son los datos registrados: \nNombre: ${this.nombre} \nApellido: ${this.apellido} \nDNI: ${this.dni} \nPrepaga: ${this.prepaga}\nCelular: ${this.celular}`)
     }
 
 }
-
-/* class Servicio{}
-constructor(servicio,precio,descrip, especialidad) {
-    this.servicio = servicio;
-    this.presio = precio;
-    this.descripcion = descrip;
-    this.especialidad = especialidad
-
-} */
 
 function Servicio(servicio,precio,descrip, especialidad) {
     this.servicio = servicio;
@@ -239,6 +235,10 @@ const serviciosDisponibles = [consulta,revision, pap, ecg, peeling, fondoOjos, e
 
 
 //Diálogo
-let nombre = prompt("Bienvenido al sitio web del consultorio! Ingresá tu nombre para comenzar: ")
+let nombre
+do{
+    nombre = prompt("Bienvenido al sitio web del consultorio! Ingresá tu nombre para comenzar: ")
+
+}while(nombre === null)
 menuPrincipal(nombre)
 
