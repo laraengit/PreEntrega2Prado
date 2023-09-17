@@ -15,7 +15,7 @@ function menuPrincipal (nombre){
     let elecc2 = 1
     
     do{
-        eleccPrinc = menu(nombre,"Menú principal", "1. Pedir un turno \n2.Calcular mi Índice de masa corporal (IMC) \n3.Chequear mis valores de presión \n4. Salir",4)
+        eleccPrinc = menu(nombre,"Menú principal", "1. Pedir un turno \n2.Calcular mi Índice de masa corporal (IMC) \n3.Chequear mis valores de presión\n4.Consulta Servicios \n5. Salir",5)
         switch(eleccPrinc){
             case 1:
                 console.log(" caso 1. Pedir un turno")
@@ -40,13 +40,17 @@ function menuPrincipal (nombre){
                 presion(nombre)
                 elecc2 = menu(nombre,"Qué hacemos?","1.Volver al Menú principal \n2. Salir",2)
                 break
-        
+            case 4:
+                console.log("caso 4.Consulta servicios")
+                consultaServicios(nombre, serviciosDisponibles,especialidades)
+                elecc2 = menu(nombre,"Qué hacemos?","1.Volver al Menú principal \n2. Salir",2)
+                break
             default:
                 salir(nombre)
                 break
         }
-    } while(elecc2!=2 && eleccPrinc != 4 )
-    if (eleccPrinc!=4){
+    } while(elecc2!=2 && eleccPrinc != 5 )
+    if (eleccPrinc!=5){
         //Si eligio 4 en el menu principal, ya la despidieron antes. Hago un caso aparte solo si se quisieron ir luego de haber realizado 1,2 o 3
         salir(nombre)
     }
@@ -108,6 +112,7 @@ function presion(nombre){
     alert(resultado)
 }
 
+
 function pedirTurno(nombre){
     let nuevo
     let prepaga
@@ -115,8 +120,8 @@ function pedirTurno(nombre){
     let disponibilidad
     let noespec = 2
     //Primero le pedimos la especialidad, para no hacerle perder tiempo si esta lo que busca
-    especialidad = menu(nombre,"Consulta turnos: Especialidad", "1. Ginecología\n2.Oftalmología\n3.Cardiología\n4.Clínica\n5.Otra",5)
-    if (especialidad==5){
+    especialidad = menu(nombre,"Consulta turnos: Especialidad", "1. Ginecología\n2.Oftalmología\n3.Cardiología\n4.Clínica\n5.Dermatología\n6.Otra",6)
+    if (especialidad==6){
         //Caso no atienden esa especialidad: le avisamos y lo redirigimos
         alert("Lo lamentamos, solo contamos con las especialidades listadas")
         noespec = 1
@@ -137,20 +142,101 @@ function pedirTurno(nombre){
             }else{
                 alert("Te agendaremos como privado.")
             }
+            let dni = prompt("Ingresá tu DNI sin puntos ni comas")
+            const paciente = new PacienteNuevo(nombre,apellido,dni,celular,prepaga)
+            
+            paciente.mostrarInfoPaciente()
         }
         //si no es nuevo, ya con el dni del paciente deberian rastrear el resto de los datos de contacto
-        let dni = prompt("Ingresá tu DNI sin puntos ni comas")
+        //let dni = prompt("Ingresá tu DNI sin puntos ni comas")
 
         alert("Listo! Quedó registrada tu consulta por el turno. Nos vamos a comunicar para enviarte los turnos disponibles.")
     }
     
+
     return noespec
 
+}
+
+function consultaServicios(nombre,servicios,especialidades){
+    //Buscador de servicios del consultorio
+    comoBusca = menu(nombre,"Consulta nuestros servicios disponibles", "1. Buscar por especialidad\n2.Mostrar todos",2)
+    let servFiltrados
+    if (comoBusca == 1){
+        //Quiere buscar por especialidad
+        especBusq = menu(nombre,"Filtrar servicios por especialidad","1. Ginecología\n2.Oftalmología\n3.Cardiología\n4.Clínica\n5.Dermatología",5)
+        let indEspec = (especBusq - 1)
+        //Filtro 
+        servFiltrados = servicios.filter((serv)=>((serv.especialidad == especialidades[indEspec])) || (serv.especialidad == "Todas"))
+
+    }
+    else{
+        servFiltrados = servicios
+    }
+    
+    //Armo un str para mostrar la info
+    let infoServ = `Los servicios que ofrecemos son: `
+    for (let serv of servFiltrados){
+        strServ = `\n\n${serv.servicio}\n    Precio: ${serv.precio}\n    Descripción: ${serv.descripcion}`
+        infoServ = infoServ + strServ
+    }
+    alert(infoServ)
 }
 
 function salir(nombre){
     alert(`¡Gracias por visitarnos ${nombre}!`)
 }
+
+
+
+//Constructores y clases
+
+class PacienteNuevo{
+    constructor(nombre,apellido,dni,celular,prepaga) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.dni = dni;
+        this.celular = celular;
+        this.prepaga = prepaga;
+    }
+
+    mostrarInfoPaciente(){
+        alert(`Estos son los datos registrados: \nNombre: ${this.nombre} \nApellido: ${this.apellido} \nDNI: ${this.dni} \nCelular: ${this.celular}`)
+    }
+
+}
+
+/* class Servicio{}
+constructor(servicio,precio,descrip, especialidad) {
+    this.servicio = servicio;
+    this.presio = precio;
+    this.descripcion = descrip;
+    this.especialidad = especialidad
+
+} */
+
+function Servicio(servicio,precio,descrip, especialidad) {
+    this.servicio = servicio;
+    this.precio = precio;
+    this.descripcion = descrip;
+    this.especialidad = especialidad
+
+}
+//Datos del sistema
+
+const prepagasAceptadas = ["Swiss Medical","OSDE","Galeno","Medicus"]
+const especialidades = ["Ginecología","Oftalmología","Cardiología","Clínica","Dermatología"]
+
+const consulta = new Servicio("Consulta",7000,"Consulta con el especialista","Todas")
+const revision = new Servicio("Revisión de estudios",5000,"Consulta para revisar estudios solicitados previamente y dar una devolución con un plan de acción","Todas")
+const  pap = new Servicio("PAP",2000,"Papanicolau: para detectar cambios en las células del cuello uterino. Incluye la toma de muestras y el laboratorio. Lo reasliza un/a ginecólogo/a","Ginecología")
+const ecg = new Servicio("ECG",2000,"Electrocardiograma(ECG): Se estudia la actividad eléctrica del corazón. Lo realiza un/a cardiólogo/a o un técnico de ECG.","Cardiología")
+const ergometria = new Servicio("Ergometría",5000,"Es una prueba de ejercicio físico donde se registra la actividad del corazón con electrodos bajo esfuerzo. Puede hacerse en bicicleta o en cinta. En nuestro consultorio se realiza en cinta.","Cardiología")
+const peeling = new Servicio("Peeling",10000,"Peeling: Tratamiento dermatológico que busca renovar la dermis a partir de una solución química que exfolia las capas externas de la piel.","Dermatología")
+const fondoOjos = new Servicio("Fondo de ojos",2000,"Permite observar la parte posterior del interior del ojo. Para ello se usan gotas que dilatan las pupilas y cuyo efecto dura unas horas. Se usa para prevenir o hacer el seguimiento de enfermedades.","Oftalmología")
+
+const serviciosDisponibles = [consulta,revision, pap, ecg, peeling, fondoOjos, ergometria]
+
 
 //Diálogo
 let nombre = prompt("Bienvenido al sitio web del consultorio! Ingresá tu nombre para comenzar: ")
